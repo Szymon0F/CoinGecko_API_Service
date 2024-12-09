@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 import logging
 import traceback
@@ -91,8 +91,8 @@ class CoinGeckoReporter:
             details: Additional error details
         """
         error_info = {
-            "message": message,
-            "timestamp": datetime.utcnow().isoformat(),
+            "error_details": message,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "error_type": type(cause).__name__ if cause else None,
             "error_message": str(cause) if cause else None,
             "stack_trace": stack or (traceback.format_exc() if cause else None),

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+import os
 import httpx
 from fastapi import APIRouter, HTTPException
 from src.models import BaseResponse
@@ -11,6 +12,9 @@ from src.models import (
     ErrorResponse
 )
 from src.reporting.coingecko_reporter import ReporterSingleton
+from src.transformers.market_data import MarketDataTransformer
+from datetime import datetime
+import time
 
 # Create router with prefix and tags
 coingecko_route = APIRouter(
@@ -19,7 +23,7 @@ coingecko_route = APIRouter(
 )
 
 # Constants
-COINGECKO_API_URL = "https://api.coingecko.com/api/v3"
+COINGECKO_API_URL = os.getenv("COINGECKO_API_URL")
 
 
 @coingecko_route.get(
@@ -50,8 +54,16 @@ async def get_market_data(
         MarketDataResponse: List of cryptocurrency market data
     """
     reporter = ReporterSingleton().get_instance()
+    start_time = time.time()
 
     try:
+        # Log the request
+        reporter.on_request(
+            endpoint="/coins/markets",
+            params={"vs_currency": vs_currency,
+                    "page": page, "per_page": per_page}
+        )
+
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 f"{COINGECKO_API_URL}/coins/markets",
@@ -65,9 +77,24 @@ async def get_market_data(
                 timeout=30.0
             )
             response.raise_for_status()
-            data = response.json()
+            raw_data = response.json()
 
-            market_data = [CoinMarketData(**coin) for coin in data]
+            # Transform data using Polars
+            transformer = MarketDataTransformer()
+            df = transformer.transform_market_data(raw_data)
+
+            market_data = [
+                CoinMarketData(**record)
+                for record in df.to_dicts()
+            ]
+
+            # Log the response
+            reporter.on_response(
+                endpoint="/coins/markets",
+                status_code=response.status_code,
+                response_time=time.time() - start_time
+            )
+
             return MarketDataResponse(
                 data=market_data,
                 total_count=len(market_data),
