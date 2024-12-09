@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Float, DateTime, Index
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -23,7 +23,8 @@ class CoinPrice(Base):
     market_dominance = Column(Float)
     volume_to_market_cap_ratio = Column(Float)
     last_updated = Column(DateTime, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=datetime.now(
+        timezone.utc), nullable=False)
 
     # Create indexes for common queries
     __table_args__ = (

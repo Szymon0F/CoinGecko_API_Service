@@ -96,5 +96,5 @@ class MarketDataTransformer:
             ).sort("price_change_percentage_24h")
             .select(["symbol", "price_change_percentage_24h"])
             .head(5).to_dicts(),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }

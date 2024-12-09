@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 from src.database.models import CoinPrice
@@ -33,7 +33,7 @@ class CoinPriceService:
                 price_change_percentage_24h=data["price_change_percentage_24h"],
                 last_updated=datetime.fromisoformat(
                     data["last_updated"].replace("Z", "+00:00")),
-                created_at=datetime.utcnow()
+                created_at=datetime.now(timezone.utc)
             )
             coin_prices.append(coin_price)
 

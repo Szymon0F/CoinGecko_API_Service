@@ -44,7 +44,7 @@ class CoinGeckoReporter:
             extra={
                 "endpoint": endpoint,
                 "parameters": params,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
         )
 
@@ -70,7 +70,7 @@ class CoinGeckoReporter:
                 "endpoint": endpoint,
                 "status_code": status_code,
                 "response_time": f"{response_time:.2f}s",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
         )
 
