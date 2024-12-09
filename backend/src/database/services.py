@@ -38,7 +38,7 @@ class CoinPriceService:
             coin_prices.append(coin_price)
 
         db.add_all(coin_prices)
-        await db.commit()
+        db.commit()
         return coin_prices
 
     @staticmethod

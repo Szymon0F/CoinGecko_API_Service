@@ -3,7 +3,7 @@
 
 import os
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from src.models import BaseResponse
 from src.models import (
     CoinMarketData,
@@ -13,6 +13,9 @@ from src.models import (
 )
 from src.reporting.coingecko_reporter import ReporterSingleton
 from src.transformers.market_data import MarketDataTransformer
+from sqlalchemy.orm import Session
+from src.database.session import get_db
+from src.database.services import CoinPriceService
 from datetime import datetime
 import time
 
@@ -39,7 +42,8 @@ async def get_market_data(
     vs_currency: str = "usd",
     page: int = 1,
     per_page: int = 100,
-    sparkline: bool = False
+    sparkline: bool = False,
+    db: Session = Depends(get_db)
 ):
     """
     Get current cryptocurrency market data from CoinGecko.
@@ -87,7 +91,17 @@ async def get_market_data(
                 CoinMarketData(**record)
                 for record in df.to_dicts()
             ]
-
+            
+            # store the data
+            try:
+                await CoinPriceService.create_coin_prices(db, raw_data)
+            except Exception as e:
+                reporter.on_error(
+                    "Error storing market data in database",
+                    cause=e,
+                    stack=None
+                )
+            
             # Log the response
             reporter.on_response(
                 endpoint="/coins/markets",
@@ -161,3 +175,14 @@ async def check_api_status():
                 details={"error": str(e)}
             ).model_dump()
         )
+
+
+@coingecko_route.get("/stored-data")
+async def get_stored_data(db: Session = Depends(get_db)):
+    """Get the latest stored cryptocurrency data"""
+    latest_prices = await CoinPriceService.get_latest_prices(db, limit=10)
+    return {
+        "count": len(latest_prices),
+        "latest_update": latest_prices[0].created_at if latest_prices else None,
+        "data": [price.to_dict() for price in latest_prices]
+    }
