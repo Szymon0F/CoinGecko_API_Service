@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+    
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+    
+    - name: Install dependencies
+      run: |
+        cd backend
+        poetry install
+    
+    - name: Run linting
+      run: |
+        cd backend
+        poetry run ruff check .
+        poetry run black --check .
+    
+    - name: Run tests
+      run: |
+        cd backend
+        poetry run pytest
+    
+    - name: Build documentation
+      run: |
+        cd backend
+        poetry run mkdocs build
+
+  deploy-docs:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Deploy documentation
+      run: |
+        cd backend
+        poetry run mkdocs gh-deploy --force

@@ -19,13 +19,7 @@ RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
 
 # Copy application code
-COPY backend /app  
-
-# Add src to PYTHONPATH
-ENV PYTHONPATH=/app:$PYTHONPATH
-
-# Expose port
-EXPOSE 8000
+COPY backend .  
 
 # Command to run the application
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
