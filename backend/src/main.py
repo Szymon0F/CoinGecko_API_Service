@@ -3,11 +3,14 @@ from fastapi import (
     status,
 )
 from fastapi.responses import Response
+from src.api.coingecko import coingecko_route
 
 app = FastAPI(
     title="CoinGecko",
     version="0.1.0",
 )
+
+app.include_router(coingecko_route)
 
 
 @app.get(
