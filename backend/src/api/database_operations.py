@@ -40,7 +40,7 @@ class CoinPriceUpdate(BaseModel):
 async def create_coin_price(coin_data: CoinPriceCreate, db: Session = Depends(get_db)):
     """Create a new coin price record"""
     try:
-        coin_price = await CoinPriceService.create_coin_prices(db, [coin_data.dict()])
+        coin_price = await CoinPriceService.create_coin_prices(db, [coin_data.model_dump()])
         return {"message": "Record created successfully", "data": coin_price[0].to_dict()}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -66,7 +66,7 @@ async def update_coin_price(
     if not coin:
         raise HTTPException(status_code=404, detail="Coin not found")
 
-    update_data = coin_data.dict(exclude_unset=True)
+    update_data = coin_data.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(coin, key, value)
 
