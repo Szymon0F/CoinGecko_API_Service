@@ -1,11 +1,11 @@
-version: '3'
 services:
   api:
     build: 
       context: .
       dockerfile: docker/Dockerfile
     ports:
-      - "8000:8000"
+      - "8000:8000"  # FastAPI port
+      - "8080:8080"  # MkDocs port
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/coingecko
       - COINGECKO_API_URL=https://api.coingecko.com/api/v3
@@ -14,6 +14,8 @@ services:
       - postgres
     volumes:
       - ./backend:/app
+      - ./docs:/app/docs
+      - ./mkdocs.yml:/app/mkdocs.yml
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 
   postgres:
