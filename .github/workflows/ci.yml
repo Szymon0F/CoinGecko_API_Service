@@ -33,9 +33,14 @@ jobs:
         poetry run black .
     
     - name: Run tests
+      working-directory: ./backend
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/coingecko
+        ENVIRONMENT: test
+        DEBUG: true
+        PYTHONPATH: ${{ github.workspace }}/backend
       run: |
-        cd backend
-        poetry run pytest
+        poetry run pytest tests/ -v --cov=src
 
     - name: Build documentation
       run: |

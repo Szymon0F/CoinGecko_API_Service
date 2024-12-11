@@ -8,7 +8,10 @@ class CoinPriceService:
     """Service for handling coin price data in the database."""
 
     @staticmethod
-    async def create_coin_prices(db: Session, market_data: List[Dict[str, Any]]) -> List[CoinPrice]:
+    async def create_coin_prices(
+        db: Session, 
+        market_data: List[Dict[str, Any]]
+    ) -> List[CoinPrice]:
         """
         Create multiple coin price records in the database.
 
@@ -42,7 +45,10 @@ class CoinPriceService:
         return coin_prices
 
     @staticmethod
-    async def get_latest_prices(db: Session, limit: int = 100) -> List[CoinPrice]:
+    async def get_latest_prices(
+        db: Session, 
+        limit: int = 100
+    ) -> List[CoinPrice]:
         """
         Get the latest coin prices from the database.
 

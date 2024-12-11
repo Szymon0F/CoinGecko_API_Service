@@ -1,11 +1,7 @@
-import logging
-import os
-import sys
-from pathlib import Path
-current_dir = Path(__file__).resolve().parent
-parent_dir = str(current_dir.parent)
-sys.path.append(parent_dir)
+import path_setup
 
+import logging
+import sys
 from alembic.config import Config
 from alembic import command
 from src.database.session import engine

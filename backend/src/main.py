@@ -17,8 +17,9 @@ app = FastAPI(
     version="0.1.0",
     debug=settings.DEBUG,
     description="""
-    A service that integrates with CoinGecko API to fetch, store, and manage cryptocurrency data.
-    
+    "A service that integrates with CoinGecko API to fetch, "
+    "store, and manage cryptocurrency data.\n"
+
     Features:
     - Fetch real-time cryptocurrency market data
     - Store data in PostgreSQL database

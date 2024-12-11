@@ -47,6 +47,14 @@ class CoinPrice(Base):
             "price_change_percentage_24h": self.price_change_percentage_24h,
             "market_dominance": self.market_dominance,
             "volume_to_market_cap_ratio": self.volume_to_market_cap_ratio,
-            "last_updated": self.last_updated.isoformat() if self.last_updated else None,
-            "created_at": self.created_at.isoformat() if self.created_at else None
+            "last_updated": (
+                self.last_updated.isoformat() 
+                if self.last_updated 
+                else None
+            ),
+            "created_at": (
+                self.created_at.isoformat() 
+                if self.created_at 
+                else None
+            )
         }
