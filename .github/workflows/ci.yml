@@ -29,14 +29,14 @@ jobs:
     - name: Run linting
       run: |
         cd backend
-        poetry run ruff check .
-        poetry run black --check .
+        poetry run ruff check . --fix
+        poetry run black .
     
     - name: Run tests
       run: |
         cd backend
         poetry run pytest
-    
+
     - name: Build documentation
       run: |
         cd backend

@@ -1,95 +1,71 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import Dict
+
 from src.database.session import get_db
 from src.database.models import CoinPrice
-from src.database.services import CoinPriceService
-from typing import List
-from datetime import datetime
-from pydantic import BaseModel
+from src.schemas import CoinPriceCreate, CoinPriceUpdate
 
-# Create router for database operations
 database_route = APIRouter(
     prefix="/db",
-    tags=["Database Operations"],
+    tags=["Database Operations"]
 )
 
+@database_route.post("/coins")
+def create_coin_price(
+    coin_data: CoinPriceCreate,
+    db: Session = Depends(get_db)
+):
+    db_coin = CoinPrice(
+        coin_id=coin_data.coin_id,
+        symbol=coin_data.symbol,
+        name=coin_data.name,
+        current_price=coin_data.current_price,
+        market_cap=coin_data.market_cap,
+        market_cap_rank=coin_data.market_cap_rank,
+        total_volume=coin_data.total_volume,
+        price_change_24h=coin_data.price_change_24h,
+        price_change_percentage_24h=coin_data.price_change_percentage_24h,
+        market_dominance=coin_data.market_dominance,
+        volume_to_market_cap_ratio=coin_data.volume_to_market_cap_ratio,
+        last_updated=coin_data.last_updated
+    )
+    db.add(db_coin)
+    db.commit()
+    db.refresh(db_coin)
+    return {"message": "Record created successfully", "data": db_coin.to_dict()}
 
-class CoinPriceCreate(BaseModel):
-    coin_id: str
-    symbol: str
-    name: str
-    current_price: float
-    market_cap: float
-    market_cap_rank: int
-    total_volume: float
-    price_change_24h: float
-    price_change_percentage_24h: float
-    last_updated: datetime
-
-
-class CoinPriceUpdate(BaseModel):
-    current_price: float | None = None
-    market_cap: float | None = None
-    market_cap_rank: int | None = None
-    total_volume: float | None = None
-    price_change_24h: float | None = None
-    price_change_percentage_24h: float | None = None
-
-
-@database_route.post("/coins", response_model=dict)
-async def create_coin_price(coin_data: CoinPriceCreate, db: Session = Depends(get_db)):
-    """Create a new coin price record"""
-    try:
-        coin_price = await CoinPriceService.create_coin_prices(db, [coin_data.model_dump()])
-        return {"message": "Record created successfully", "data": coin_price[0].to_dict()}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@database_route.get("/coins/{coin_id}", response_model=dict)
-async def read_coin_price(coin_id: str, db: Session = Depends(get_db)):
-    """Read a specific coin price record"""
-    coin = db.query(CoinPrice).filter(CoinPrice.coin_id == coin_id).first()
-    if not coin:
+@database_route.get("/coins/{coin_id}")
+def read_coin_price(coin_id: str, db: Session = Depends(get_db)):
+    db_coin = db.query(CoinPrice).filter(CoinPrice.coin_id == coin_id).first()
+    if db_coin is None:
         raise HTTPException(status_code=404, detail="Coin not found")
-    return coin.to_dict()
+    return db_coin.to_dict()
 
-
-@database_route.put("/coins/{coin_id}", response_model=dict)
-async def update_coin_price(
+@database_route.put("/coins/{coin_id}")
+def update_coin_price(
     coin_id: str,
     coin_data: CoinPriceUpdate,
     db: Session = Depends(get_db)
 ):
-    """Update a coin price record"""
-    coin = db.query(CoinPrice).filter(CoinPrice.coin_id == coin_id).first()
-    if not coin:
+    db_coin = db.query(CoinPrice).filter(CoinPrice.coin_id == coin_id).first()
+    if db_coin is None:
         raise HTTPException(status_code=404, detail="Coin not found")
-
+    
     update_data = coin_data.model_dump(exclude_unset=True)
     for key, value in update_data.items():
-        setattr(coin, key, value)
-
-    try:
-        db.commit()
-        db.refresh(coin)
-        return {"message": "Record updated successfully", "data": coin.to_dict()}
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
-
+        setattr(db_coin, key, value)
+    
+    db.commit()
+    db.refresh(db_coin)
+    return {"message": "Record updated successfully", "data": db_coin.to_dict()}
 
 @database_route.delete("/coins/{coin_id}")
-async def delete_coin_price(coin_id: str, db: Session = Depends(get_db)):
-    """Delete a coin price record"""
-    coin = db.query(CoinPrice).filter(CoinPrice.coin_id == coin_id).first()
-    if not coin:
+def delete_coin_price(coin_id: str, db: Session = Depends(get_db)):
+    db_coin = db.query(CoinPrice).filter(CoinPrice.coin_id == coin_id).first()
+    if db_coin is None:
         raise HTTPException(status_code=404, detail="Coin not found")
-
-    try:
-        db.delete(coin)
-        db.commit()
-        return {"message": "Record deleted successfully"}
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+    
+    db.delete(db_coin)
+    db.commit()
+    return {"message": "Record deleted successfully"}

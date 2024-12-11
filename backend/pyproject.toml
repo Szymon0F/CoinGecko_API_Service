@@ -18,6 +18,7 @@ alembic = "^1.13.1"
 mkdocs = "^1.5.0"
 mkdocs-material = "^9.5.0"
 mkdocstrings = {extras = ["python"], version = "^0.24.0"}
+git-filter-repo = "^2.47.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.15.0"
@@ -25,6 +26,8 @@ pre-commit = "^2.15.0"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
 pytest-asyncio = "^0.23.5"
+black = "^24.1.1"
+ruff = "^0.2.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -34,7 +37,13 @@ build-backend = "poetry.core.masonry.api"
 [tool.black]
 line-length = 88
 target-version = ['py310']
+include = '\.pyi?$'
 
 [tool.ruff]
 line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
 select = ["E", "F", "I"]
+ignore = []
+fix = true

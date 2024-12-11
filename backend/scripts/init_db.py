@@ -1,11 +1,16 @@
 import logging
+import os
+import sys
+from pathlib import Path
+current_dir = Path(__file__).resolve().parent
+parent_dir = str(current_dir.parent)
+sys.path.append(parent_dir)
+
+from alembic.config import Config
+from alembic import command
 from src.database.session import engine
 from src.database.models import Base
 from src.database.create_db import create_database
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -21,8 +26,10 @@ def init_db():
         # Create database if it doesn't exist
         create_database()
 
-        # Create all tables
-        Base.metadata.create_all(bind=engine)
+        # Only run Alembic migrations (remove Base.metadata.create_all)
+        alembic_cfg = Config("alembic.ini")
+        command.upgrade(alembic_cfg, "head")
+        
         logger.info("Database initialized successfully")
     except Exception as e:
         logger.error(f"Error initializing database: {e}")

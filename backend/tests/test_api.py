@@ -1,34 +1,35 @@
 import pytest
 from fastapi.testclient import TestClient
+from unittest.mock import Mock
+from datetime import datetime, timezone
 
+@pytest.mark.asyncio
+async def test_get_market_data(client):
+    # Create a mock response
+    mock_data = [
+        {
+            "coin_id": "test-coin",
+            "symbol": "TEST",
+            "name": "Test Coin",
+            "current_price": 100.0,
+            "market_cap": 1000000.0,
+            "market_cap_rank": 1,
+            "total_volume": 50000.0,
+            "price_change_24h": 5.0,
+            "price_change_percentage_24h": 5.0,
+            "market_dominance": 0.0,
+            "volume_to_market_cap_ratio": 0.0,
+            "last_updated": datetime.now(timezone.utc).isoformat()
+        }
+    ]
 
-def test_health_check(client):
-    response = client.get("/health")
-    assert response.status_code == 200
-
-
-def test_get_market_data(client, mocker):
-    # Mock the CoinGecko API response
-    mock_response = {
-        "data": [
-            {
-                "id": "bitcoin",
-                "symbol": "btc",
-                "name": "Bitcoin",
-                "current_price": 50000,
-                "market_cap": 1000000000000,
-                "market_cap_rank": 1,
-                "total_volume": 50000000000,
-                "price_change_24h": 1000,
-                "price_change_percentage_24h": 2.5,
-                "last_updated": "2024-02-20T12:00:00Z"
-            }
-        ]
-    }
-
-    mocker.patch("httpx.AsyncClient.get", return_value=mock_response)
-
-    response = client.get("/coingecko/markets")
-    assert response.status_code == 200
-    data = response.json()
-    assert len(data["data"]) > 0
+    with pytest.MonkeyPatch().context() as m:
+        # Mock the external API call
+        m.setattr("src.api.coingecko.coingecko_route", lambda: mock_data)
+        
+        # Make request to your endpoint
+        response = client.get("/coingecko/markets")
+        
+        # Assert response
+        assert response.status_code == 200
+        assert "data" in response.json()

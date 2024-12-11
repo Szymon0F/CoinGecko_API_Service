@@ -22,18 +22,13 @@ This project implements a data processing pipeline that fetches data from extern
 
 ## Installation
 
-### Using Poetry
-```bash
-# Install Poetry
-curl -sSL https://install.python-poetry.org | python3 -
-
-# Install dependencies
-poetry install
-
 ### Getting Started
 1. Clone the repository
-2. Open in VS Code with Dev Containers
-3. Run `poetry install` in the terminal
+2. Run `poetry install` in the terminal
+3. Make the poetry.lock file: 
+  `cd backend/`
+  `poetry lock`
+4. Docker build: `docker-compose build`
 4. Start the services: `docker-compose up`
 
 ### API Documentation

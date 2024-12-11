@@ -1,7 +1,4 @@
-import pytest
-from fastapi.testclient import TestClient
 from datetime import datetime, timezone
-from src.api.database_operations import CoinPriceCreate, CoinPriceUpdate
 
 
 def test_create_coin_price(client, db_session):
@@ -15,10 +12,13 @@ def test_create_coin_price(client, db_session):
         "total_volume": 50000.0,
         "price_change_24h": 5.0,
         "price_change_percentage_24h": 5.0,
+        "market_dominance": 0.0,
+        "volume_to_market_cap_ratio": 0.0,
         "last_updated": datetime.now(timezone.utc).isoformat()
     }
 
     response = client.post("/db/coins", json=test_data)
+    print("Response:", response.json())
     assert response.status_code == 200
     assert response.json()["message"] == "Record created successfully"
 
@@ -35,6 +35,8 @@ def test_read_coin_price(client, db_session):
         "total_volume": 50000.0,
         "price_change_24h": 5.0,
         "price_change_percentage_24h": 5.0,
+	    "market_dominance": 0.0,
+        "volume_to_market_cap_ratio": 0.0,
         "last_updated": datetime.now(timezone.utc).isoformat()
     }
     client.post("/db/coins", json=test_data)
@@ -56,7 +58,9 @@ def test_update_coin_price(client, db_session):
         "total_volume": 50000.0,
         "price_change_24h": 5.0,
         "price_change_percentage_24h": 5.0,
-        "last_updated": datetime.now(timezone.utc).isoformat()
+        "market_dominance": 0.0,
+        "volume_to_market_cap_ratio": 0.0,
+	    "last_updated": datetime.now(timezone.utc).isoformat()
     }
     client.post("/db/coins", json=test_data)
 
@@ -81,6 +85,8 @@ def test_delete_coin_price(client, db_session):
         "total_volume": 50000.0,
         "price_change_24h": 5.0,
         "price_change_percentage_24h": 5.0,
+	    "market_dominance": 0.0,
+        "volume_to_market_cap_ratio": 0.0,
         "last_updated": datetime.now(timezone.utc).isoformat()
     }
     client.post("/db/coins", json=test_data)
